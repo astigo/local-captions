@@ -31,7 +31,7 @@ final class CaptionModeTests: XCTestCase {
         XCTAssertNil(engine.selectedMode.languageHint)
         engine.selectMode(.translation)
         XCTAssertTrue(engine.selectedMode.translates)
-        XCTAssertNotNil(engine.selectedMode.languageHint)
+        XCTAssertNil(engine.selectedMode.languageHint, "a hint would turn Greek or Russian speech into Latin letters")
     }
 
     @MainActor func testBilingualJournalHasOriginalTextAndNoMissingTranslationMessage() throws {

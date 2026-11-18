@@ -107,7 +107,7 @@ final class TranscriptJournal: @unchecked Sendable {
         if let ended = metadata.endedAt { text += "Завершение: \(date.string(from: ended))\n" }
         let transcription = metadata.mode == CaptionMode.transcription.rawValue
         let modeTitle = transcription ? "EN+RU transcription — исходная речь без перевода"
-            : (metadata.mode == CaptionMode.learning.rawValue ? "Обучение — EN и RU, перевод на другой язык по клику" : "EN -> RU translate")
+            : (metadata.mode == CaptionMode.learning.rawValue ? "Обучение — EN и RU, перевод на другой язык по клику" : "Перевод отдельной дорожкой")
         text += "\nРежим: \(modeTitle). Захват включается и выключается пользователем.\nВременные метки системных реплик относятся к появлению текста, микрофонных — к захвату звука. Источники — кандидаты по активному аудиовыходу; при смешанном звуке точное соответствие реплике неизвестно. Названия окон могут отличаться от названия встречи.\n\n"
         for caption in captions.sorted(by: { ($0.audioStartAt ?? $0.firstSeenAt) < ($1.audioStartAt ?? $1.firstSeenAt) }) {
             let offset = max(0, Int((caption.audioStartAt ?? caption.firstSeenAt).timeIntervalSince(metadata.startedAt)))
@@ -115,9 +115,8 @@ final class TranscriptJournal: @unchecked Sendable {
             if !caption.sources.isEmpty {
                 text += "Возможные источники: " + caption.sources.map { Self.inline($0.label) }.joined(separator: " | ") + "\n\n"
             }
-            // Learning mode hears both languages; each phrase is labelled by its own language.
-            let learning = metadata.mode == CaptionMode.learning.rawValue
-            let original = learning ? CaptionLanguage.detect(caption.english).label : (transcription ? "Текст" : "EN")
+            // Speech is heard as is in every mode; each phrase is labelled by its own script.
+            let original = transcription ? "Текст" : CaptionLanguage.detect(caption.english).label
             text += "**\(caption.channel == "microphone" ? "Я · микрофон" : original):** \(Self.inline(caption.english))\n\n"
             if transcription || caption.channel == "microphone" {
                 if !caption.finalized { text += "_Незавершённый фрагмент._\n\n" }

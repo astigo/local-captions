@@ -33,7 +33,7 @@ the video. Meetings are saved as plain-text transcripts. Nothing leaves your Mac
 | **Rolling captions** | A fixed number of lines; new text appears at the bottom, words arrive one by one, the unsettled tail of a hypothesis is dimmed and a corrected word briefly highlighted. A new paragraph starts after a finished sentence and a pause. |
 | **Learning mode** | Hover the captions: the lines you are reading hold still and a curtain unrolls with live speech below. Click a word for its translation in context, double-click for the whole phrase. Phrases with a ready translation are underlined. Save words to a vocabulary. |
 | **English ↔ Russian, or any of 33 languages** | Both languages are transcribed in one mode; by default each phrase is translated into the other one on click. Settings can send translations into any language HY-MT2 knows: German, Japanese, Ukrainian and so on. A personal glossary (`витрина = data mart`) fixes terms the model gets wrong when translating into Russian or English. |
-| **Translation lane** | An alternative view: English on top, Russian translation in its own lane below that never pushes the English text. |
+| **Translation lane** | The same recognition as learning mode, shown differently: speech on top, the translation in its own lane below that never pushes the original text. |
 | **Meeting transcripts** | Every session is saved as Markdown and JSONL with timestamps and the playing app or browser tab. An optional microphone channel adds your own voice to the file only. |
 | **Switches that work mid-session** | Hide the subtitles but keep recording, turn translation off to save resources, toggle the microphone for a call. |
 | **Measured, not guessed** | Each session appends display latency (p50/p95 from the end of a spoken word to its final spelling on screen), revision rate and translation latency to a local metrics log. |
@@ -154,7 +154,8 @@ window, the translation language, word-by-word reveal, browser-tab detection and
 ## Limitations
 
 - Apple Silicon and macOS 15+ only; the build is signed ad hoc.
-- English and Russian are the tuned pair; other languages Parakeet Ultra knows are untested.
+- Speech is recognized in the 25 European languages of Parakeet Ultra; translation goes into 33. English and
+  Russian are the tuned and measured pair, Croatian and Greek were checked by ear, the rest are untested.
 - Latency figures come from synthetic voices and one real session, not a broad benchmark.
 - The UI is in Russian.
 
