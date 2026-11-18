@@ -134,12 +134,12 @@ struct Caption: Identifiable, Equatable, Codable {
         refreshLive(now: now)
     }
 
-    func translated(id: UUID, text: String, session expected: UUID, now: Date = Date(), language: CaptionLanguage = .russian) {
+    func translated(id: UUID, text: String, session expected: UUID, now: Date = Date(), language: TranslationLanguage = .russian) {
         guard mode.translates, expected == session, let index = history.firstIndex(where: { $0.id == id }) else { return }
         if !history[index].finalized { metrics.finalized(id: id, text: history[index].english) }
         history[index].finalized = true
         history[index].russian = text
-        history[index].translationLanguage = language.rawValue
+        history[index].translationLanguage = language.code
         metrics.translated(id: id)
         // Hidden translations must not keep learning captions on screen indefinitely.
         // A clicked phrase gets a fresh reading interval when its translation arrives.

@@ -32,7 +32,7 @@ the video. Meetings are saved as plain-text transcripts. Nothing leaves your Mac
 |---|---|
 | **Rolling captions** | A fixed number of lines; new text appears at the bottom, words arrive one by one, the unsettled tail of a hypothesis is dimmed and a corrected word briefly highlighted. A new paragraph starts after a finished sentence and a pause. |
 | **Learning mode** | Hover the captions: the lines you are reading hold still and a curtain unrolls with live speech below. Click a word for its translation in context, double-click for the whole phrase. Phrases with a ready translation are underlined. Save words to a vocabulary. |
-| **English ↔ Russian** | Both languages are transcribed in one mode; each phrase is translated into the other language on click. A personal glossary (`витрина = data mart`) fixes terms the model gets wrong. |
+| **English ↔ Russian, or any of 33 languages** | Both languages are transcribed in one mode; by default each phrase is translated into the other one on click. Settings can send translations into any language HY-MT2 knows: German, Japanese, Ukrainian and so on. A personal glossary (`витрина = data mart`) fixes terms the model gets wrong when translating into Russian or English. |
 | **Translation lane** | An alternative view: English on top, Russian translation in its own lane below that never pushes the English text. |
 | **Meeting transcripts** | Every session is saved as Markdown and JSONL with timestamps and the playing app or browser tab. An optional microphone channel adds your own voice to the file only. |
 | **Switches that work mid-session** | Hide the subtitles but keep recording, turn translation off to save resources, toggle the microphone for a call. |
@@ -140,7 +140,7 @@ a rebuild macOS may ask again; remove the old entry in Privacy settings and add 
 4. **История** (History) opens a searchable window; transcripts are in `Transcripts/`.
 
 Settings cover placement (bottom or a right-hand column), lines, font, backdrop opacity, the Ultra
-window, word-by-word reveal, browser-tab detection and a per-session statistics table.
+window, the translation language, word-by-word reveal, browser-tab detection and a per-session statistics table.
 
 ## Privacy
 

@@ -48,6 +48,7 @@ actor Recognition {
     private let clock: AudioClock?
     private let ultraChunkSeconds: Double
     private let glossary: @Sendable () -> Glossary
+    private let translationLanguage: @Sendable () -> TranslationLanguage
     /// Samples given to the recognizer so far; positions in `clock` use the same count.
     private var sessionSamples = 0
     private var ultraBaseSample = 0
@@ -60,10 +61,12 @@ actor Recognition {
          mode: CaptionMode = .translation, clock: AudioClock? = nil,
          ultraChunkSeconds: Double? = nil,
          glossary: @escaping @Sendable () -> Glossary = { Glossary(text: "") },
+         translationLanguage: @escaping @Sendable () -> TranslationLanguage = { .russian },
          onStatus: @escaping @Sendable (String) -> Void) {
         self.worker = worker; self.store = store; self.session = session; self.onStatus = onStatus
         self.mode = mode; self.choice = choice; self.clock = clock
         self.ultraChunkSeconds = ultraChunkSeconds ?? RecognitionTuning.ultraChunkSeconds(for: mode); self.glossary = glossary
+        self.translationLanguage = translationLanguage
     }
 
     func load(runtime: URL) async throws {
@@ -221,9 +224,9 @@ actor Recognition {
             await store.translationFailed(id: id, message: "Перевод отстаёт от речи", session: session)
             return
         }
-        // In learning mode Russian speech is translated into English, everything else into Russian.
-        let target: CaptionLanguage = mode == .learning ? CaptionLanguage.detect(text).opposite : .russian
-        let terms = glossary().pairs(in: text, target: target)
+        // Into the chosen language; a phrase already in it goes into English (Russian when English is chosen).
+        let target = translationLanguage().target(for: text)
+        let terms = target.glossaryLanguage.map { glossary().pairs(in: text, target: $0) } ?? []
         translating[id] = Task { [weak self, worker, store, session] in
             do {
                 let translation = try await worker.translate(text, into: target, terms: terms)
@@ -464,7 +467,8 @@ actor Recognition {
                 let input = LiveAudioInput(); audioInput = input
                 let transcripts = transcriptsDirectory
                 let recognizer = Recognition(worker: worker, store: store, session: captionSession, model: selected, mode: mode,
-                                             clock: input.clock, glossary: { Glossary.load(transcripts: transcripts) }) { [weak self] status in
+                                             clock: input.clock, glossary: { Glossary.load(transcripts: transcripts) },
+                                             translationLanguage: { TranslationLanguage.stored() }) { [weak self] status in
                     Task { @MainActor in
                         guard let self, self.session == current, self.active else { return }
                         self.state = status
@@ -580,13 +584,14 @@ actor Recognition {
     }
 
     /// A single word for the learning card. Uses the session's translator, so it works only while running.
-    /// The word goes into the other language of its phrase; a glossary term answers at once.
+    /// The word goes where its phrase would go (see `TranslationLanguage.target`); a glossary term answers at once.
     func translateWord(_ word: String, context: String) async throws -> String {
-        let target = CaptionLanguage.detect(context).opposite
+        let target = TranslationLanguage.stored().target(for: context)
         let glossary = Glossary.load(transcripts: transcriptsDirectory)
-        if let known = glossary.word(word, target: target) { return known }
+        if let language = target.glossaryLanguage, let known = glossary.word(word, target: language) { return known }
         guard let worker else { throw CaptionsError.message("Переводчик не запущен") }
-        return try await worker.translateWord(word, context: context, into: target, terms: glossary.pairs(in: context, target: target))
+        let terms = target.glossaryLanguage.map { glossary.pairs(in: context, target: $0) } ?? []
+        return try await worker.translateWord(word, context: context, into: target, terms: terms)
     }
 
     func stopAndWait() async {

@@ -52,8 +52,8 @@ actor LocalWorker {
         }
     }
 
-    func translate(_ text: String, into target: CaptionLanguage = .russian, terms: [[String]] = []) async throws -> String {
-        let response = try await call(["op": "translate", "text": text, "target": target.rawValue, "terms": terms])
+    func translate(_ text: String, into target: TranslationLanguage = .russian, terms: [[String]] = []) async throws -> String {
+        let response = try await call(["op": "translate", "text": text, "target": target.code, "language": target.name, "terms": terms])
         guard let translated = response["text"] as? String, !translated.isEmpty else {
             throw CaptionsError.message("Переводчик вернул пустой результат")
         }
@@ -61,8 +61,8 @@ actor LocalWorker {
     }
 
     /// One word as used in `context`; the phrase background used by `translate` is left alone.
-    func translateWord(_ word: String, context: String, into target: CaptionLanguage = .russian, terms: [[String]] = []) async throws -> String {
-        let response = try await call(["op": "word", "text": word, "context": context, "target": target.rawValue, "terms": terms])
+    func translateWord(_ word: String, context: String, into target: TranslationLanguage = .russian, terms: [[String]] = []) async throws -> String {
+        let response = try await call(["op": "word", "text": word, "context": context, "target": target.code, "language": target.name, "terms": terms])
         guard let translated = response["text"] as? String, !translated.isEmpty else {
             throw CaptionsError.message("Переводчик вернул пустой результат")
         }

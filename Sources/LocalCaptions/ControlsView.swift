@@ -89,6 +89,7 @@ struct SettingsView: View {
     @State private var sessions: [SessionMetricsSummary] = []
     @State private var chunk = RecognitionTuning.ultraChunkSeconds(for: .learning)
     @State private var detectTabs = BrowserTabs.enabled
+    @AppStorage(TranslationLanguage.defaultsKey) private var translationLanguage = TranslationLanguage.russian.code
     @State private var tabsTrusted = BrowserTabs.trusted
     @State private var reportMessage: String?
     private var locked: Bool { engine.active || engine.busy }
@@ -165,6 +166,14 @@ struct SettingsView: View {
                 Picker("Переводчик", selection: $engine.selectedTranslator) {
                     ForEach(TranslationModel.allCases) { Text($0.title).tag($0) }
                 }.disabled(locked)
+                // Read at every translation, so it works during a session too.
+                Picker("Переводить на", selection: $translationLanguage) {
+                    ForEach(TranslationLanguage.all) { Text($0.title).tag($0.code) }
+                }
+                Text(translationLanguage == TranslationLanguage.english.code
+                     ? "Фразы на английском переводятся на русский. Меняется сразу, и во время записи тоже."
+                     : "Фразы на этом языке переводятся на английский. Меняется сразу, и во время записи тоже.")
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
             LabeledContent("Термины") {
                 Button("Открыть glossary.txt") {
@@ -172,9 +181,9 @@ struct SettingsView: View {
                     NSWorkspace.shared.open(Glossary.url(in: engine.transcriptsDirectory))
                 }
             }
-            Text("Строки «витрина = data mart»: переводчик будет использовать ваши термины в обе стороны.")
+            Text("Строки «витрина = data mart»: переводчик будет использовать ваши термины в обе стороны. Работают при переводе на русский и английский.")
                 .font(.caption).foregroundStyle(.secondary)
-            Text("Изменения применятся при следующем запуске.").font(.caption).foregroundStyle(.secondary)
+            Text("Режим, модель и переводчик меняются при следующем запуске.").font(.caption).foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
     }

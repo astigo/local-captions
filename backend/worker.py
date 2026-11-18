@@ -75,8 +75,9 @@ class HyTranslator:
             return ""
         return "Refer to the following translation:\n" + "\n".join(f"{source} is translated as {target}" for source, target in terms) + "\n\n"
 
-    def translate(self, text, target="ru", terms=None):
-        language = self.LANGUAGES[target]
+    def translate(self, text, target="ru", terms=None, language=None):
+        # The app sends the language name from the model card; the two codes below work without it.
+        language = language or self.LANGUAGES[target]
         previous = self.previous.get(target, [])
         prompt = f"Translate the following text into {language}. Note that you should only output the translated result without any additional explanation:\n" + text
         if previous:
@@ -94,14 +95,15 @@ class HyTranslator:
         self.previous[target] = (previous + [text])[-2:]
         return result
 
-    def word(self, word, context, target="ru", terms=None):
+    def word(self, word, context, target="ru", terms=None, language=None):
         """One word as used in its sentence; never touches the phrase background.
         A translation model follows markup better than instructions: the word is tagged
         in its sentence, the sentence is translated, and the tagged part is taken back."""
         import re
+        language = language or self.LANGUAGES[target]
         marked = re.sub(r"(?<![\w'-])" + re.escape(word) + r"(?![\w'-])", "<sn>" + word + "</sn>", context, count=1)
         if "<sn>" in marked:
-            prompt = (self.glossary(terms) + f"Translate the following segment into {self.LANGUAGES[target]}. Keep the <sn></sn> tags around the "
+            prompt = (self.glossary(terms) + f"Translate the following segment into {language}. Keep the <sn></sn> tags around the "
                       "translation of the tagged word. Output only the translated segment:\n" + marked)
             data = self.request("POST", "/v1/chat/completions", {
                 "messages": [{"role": "user", "content": prompt}], "stream": False,
@@ -110,7 +112,7 @@ class HyTranslator:
             if found and 0 < len(found.group(1).split()) <= 4:
                 return found.group(1).strip(" .,;:!?\"«»")
         data = self.request("POST", "/v1/chat/completions", {
-            "messages": [{"role": "user", "content": f"Translate the following text into {self.LANGUAGES[target]}. Note that you should only output the translated result without any additional explanation:\n" + word}],
+            "messages": [{"role": "user", "content": f"Translate the following text into {language}. Note that you should only output the translated result without any additional explanation:\n" + word}],
             "stream": False, "temperature": 0, "max_tokens": 16, "cache_prompt": False})
         result = data["choices"][0]["message"]["content"].strip().splitlines()[0].strip(" .\"«»")
         if not result or len(result.split()) > 4:
@@ -149,9 +151,9 @@ def main():
                 if target not in ("ru", "en"):
                     raise ValueError("Unknown target language")
                 if request["op"] == "translate":
-                    result = {"text": models.translate(request["text"], target, terms)}
+                    result = {"text": models.translate(request["text"], target, terms, request.get("language"))}
                 elif request["op"] == "word":
-                    result = {"text": models.word(request["text"], request.get("context", ""), target, terms)}
+                    result = {"text": models.word(request["text"], request.get("context", ""), target, terms, request.get("language"))}
                 else:
                     raise ValueError("Unknown operation")
                 result.update(id=request["id"], milliseconds=round((time.perf_counter() - started) * 1000, 1))
