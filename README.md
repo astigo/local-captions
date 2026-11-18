@@ -83,6 +83,16 @@ flowchart LR
 - **Models are swappable:** recognizers and translators are chosen in settings; adding one for
   comparison is a new enum case plus its loader.
 
+## Languages
+
+**Speech recognition** (Parakeet Ultra, 25 languages): English, Russian, Ukrainian, German, French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Slovak, Hungarian, Romanian, Bulgarian, Greek, Croatian, Slovenian, Latvian, Lithuanian, Estonian, Finnish, Swedish, Danish, Maltese.
+
+**Translation** (HY-MT2, the 33 languages and variants of its model card; choose one in settings): Russian, English, Ukrainian, German, French, Spanish, Italian, Portuguese, Polish, Czech, Dutch, Turkish, Kazakh, Chinese, Traditional Chinese, Cantonese, Japanese, Korean, Arabic, Hebrew, Persian, Hindi, Bengali, Urdu, Gujarati, Marathi, Tamil, Telugu, Thai, Vietnamese, Indonesian, Malay, Filipino, Khmer, Burmese, Mongolian, Tibetan, Uyghur.
+
+Speech in other languages, such as Hindi or Japanese, is not recognized: the recognizer writes it out as
+phonetic nonsense. English and Russian are the tuned and measured pair; Croatian and Greek were checked by
+ear; the others are untested. The glossary works when translating into Russian or English.
+
 ## Measured latency
 
 From the end of a spoken word to its text on screen, real-time playback through the app pipeline
