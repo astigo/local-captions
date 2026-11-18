@@ -1,0 +1,8 @@
+# Build output and the local runtime: models, Python environment, caches, measurements.
+.build/
+.runtime/
+dist/
+# Personal data: meeting transcripts, metrics, vocabulary and glossary never leave this Mac.
+Transcripts/
+__pycache__/
+.DS_Store
