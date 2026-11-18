@@ -97,6 +97,21 @@ From the end of a spoken word to its text on screen, real-time playback through 
 A real 6-minute session with the microphone on measured 0.73 s p50 / 0.98 s p95 to the final spelling
 on screen, with 2.6% of shown words later corrected.
 
+## Resource use
+
+Measured on an Apple M2 Pro (32 GB) during a video call, with `ps`, `footprint` and `powermetrics`:
+
+| | Recording | Stopped |
+|---|---:|---:|
+| CPU, Local Captions process | 15–20% of one core, peaks to 45% | 0% |
+| Memory | ~190 MB app + ~770 MB translator | ~180 MB, translator unloaded |
+| Neural Engine (recognition) | +0.2 W | 0 W |
+| Whole-system CPU and GPU power | no difference from the app being closed, within second-to-second noise | same |
+
+Playback speed barely matters: video at 2× gives the same figures, because recognition runs on fixed-length
+windows. For scale, the call app itself kept the Neural Engine at about 0.9 W, probably for noise
+suppression or background effects.
+
 ## Install
 
 Requirements: macOS 15+, Apple Silicon, Xcode with Swift 6.2+, [uv](https://docs.astral.sh/uv/),
@@ -129,7 +144,8 @@ window, word-by-word reveal, browser-tab detection and a per-session statistics 
 
 ## Privacy
 
-- Audio is processed in memory and never saved; only text goes to `Transcripts/`.
+- System audio is processed in memory and never saved; only text goes to `Transcripts/`. The optional
+  microphone channel keeps temporary audio until it is transcribed.
 - No network access at runtime; models are downloaded once by the setup script.
 - The translator listens on a Unix socket readable only by the current user, no TCP port.
 - Detecting the playing browser tab is off by default and needs the Accessibility permission.
