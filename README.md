@@ -119,8 +119,7 @@ Measured on an Apple M2 Pro (32 GB) during a video call, with `ps`, `footprint` 
 | Whole-system CPU and GPU power | no difference from the app being closed, within second-to-second noise | same |
 
 Playback speed barely matters: video at 2× gives the same figures, because recognition runs on fixed-length
-windows. For scale, the call app itself kept the Neural Engine at about 0.9 W, probably for noise
-suppression or background effects.
+windows.
 
 ## Install
 
