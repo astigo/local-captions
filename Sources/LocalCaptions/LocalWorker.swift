@@ -26,14 +26,8 @@ actor LocalWorker {
         let stdin = Pipe(), stdout = Pipe(), errors = Pipe()
         process.standardInput = stdin; process.standardOutput = stdout; process.standardError = errors
         input = stdin.fileHandleForWriting; output = stdout.fileHandleForReading
-        stdout.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let data = handle.availableData
-            Task { await self?.receive(data) }
-        }
-        errors.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let data = handle.availableData
-            Task { await self?.receiveError(data) }
-        }
+        stdout.fileHandleForReading.readabilityHandler = Self.reader { [weak self] data in Task { await self?.receive(data) } }
+        errors.fileHandleForReading.readabilityHandler = Self.reader { [weak self] data in Task { await self?.receiveError(data) } }
         process.terminationHandler = { [weak self] _ in
             Task { await self?.failed("Локальный обработчик завершился. Повторите запуск.") }
         }
@@ -84,6 +78,16 @@ actor LocalWorker {
         try? input?.close(); output?.readabilityHandler = nil
         failed("Обработка остановлена")
         process = nil; input = nil; output = nil; buffer.removeAll()
+    }
+
+    /// Reads a pipe until its end. At the end of the stream the handler keeps firing with empty
+    /// data, so it removes itself: a leftover handler spun two cores after the worker exited.
+    static func reader(_ deliver: @escaping @Sendable (Data) -> Void) -> @Sendable (FileHandle) -> Void {
+        { handle in
+            let data = handle.availableData
+            if data.isEmpty { handle.readabilityHandler = nil; return }
+            deliver(data)
+        }
     }
 
     private func receiveError(_ data: Data) {
