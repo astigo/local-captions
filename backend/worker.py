@@ -4,6 +4,7 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 import argparse
 import json
+import re
 import pathlib
 import sys
 import time
@@ -148,12 +149,14 @@ def main():
             started = time.perf_counter()
             try:
                 target, terms = request.get("target", "ru"), request.get("terms") or []
-                if target not in ("ru", "en"):
+                # Other languages come with their name from the model card; the name goes into the prompt.
+                language = request.get("language")
+                if target not in models.LANGUAGES and not (isinstance(language, str) and re.fullmatch(r"[A-Za-z ]{2,40}", language)):
                     raise ValueError("Unknown target language")
                 if request["op"] == "translate":
-                    result = {"text": models.translate(request["text"], target, terms, request.get("language"))}
+                    result = {"text": models.translate(request["text"], target, terms, language)}
                 elif request["op"] == "word":
-                    result = {"text": models.word(request["text"], request.get("context", ""), target, terms, request.get("language"))}
+                    result = {"text": models.word(request["text"], request.get("context", ""), target, terms, language)}
                 else:
                     raise ValueError("Unknown operation")
                 result.update(id=request["id"], milliseconds=round((time.perf_counter() - started) * 1000, 1))

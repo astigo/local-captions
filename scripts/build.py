@@ -30,7 +30,7 @@ with (contents / "Info.plist").open("wb") as output:
         "CFBundleIdentifier": "local.localcaptions.mac",
         "CFBundleName": "Local Captions", "CFBundleDisplayName": "Local Captions",
         "CFBundleExecutable": "LocalCaptions", "CFBundlePackageType": "APPL",
-        "CFBundleShortVersionString": "0.9.0", "CFBundleVersion": "12",
+        "CFBundleShortVersionString": "0.9.1", "CFBundleVersion": "13",
         "LSMinimumSystemVersion": "15.0", "LSUIElement": True,
         "NSHighResolutionCapable": True,
         "NSAudioCaptureUsageDescription": "Системный звук используется для локальных субтитров и перевода английской речи.",
